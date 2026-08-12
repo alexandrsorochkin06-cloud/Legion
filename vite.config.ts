@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  base: "/Legion/",
+  // Relative assets work both on GitHub Pages /Legion/ and a custom root domain.
+  base: "./",
 });
