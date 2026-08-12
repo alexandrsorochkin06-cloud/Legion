@@ -10,5 +10,86 @@
   <body>
     <div id="app"></div>
     <script type="module" src="./src/main.ts"></script>
+    <script>
+      (() => {
+        let pointerRecentlySeen = false;
+        let touchStart = null;
+
+        const getBoard = () => document.querySelector('#board');
+        const getTile = target => target && target.closest ? target.closest('.tile') : null;
+
+        const watch = () => {
+          const board = getBoard();
+          if (!board || board.dataset.touchCompat === '1') return;
+          board.dataset.touchCompat = '1';
+
+          board.addEventListener('pointerdown', () => {
+            pointerRecentlySeen = true;
+            setTimeout(() => { pointerRecentlySeen = false; }, 500);
+          }, { passive: true });
+
+          board.addEventListener('touchstart', event => {
+            if (pointerRecentlySeen || event.touches.length !== 1) return;
+            const tile = getTile(event.target);
+            if (!tile) return;
+            const touch = event.touches[0];
+            touchStart = {
+              x: touch.clientX,
+              y: touch.clientY,
+              index: Number(tile.dataset.i)
+            };
+            event.preventDefault();
+          }, { passive: false });
+
+          board.addEventListener('touchmove', event => {
+            if (!touchStart || event.touches.length !== 1) return;
+            event.preventDefault();
+          }, { passive: false });
+
+          board.addEventListener('touchend', event => {
+            if (!touchStart) return;
+            const touch = event.changedTouches[0];
+            const start = touchStart;
+            touchStart = null;
+            event.preventDefault();
+
+            const dx = touch.clientX - start.x;
+            const dy = touch.clientY - start.y;
+            if (Math.max(Math.abs(dx), Math.abs(dy)) < 18) return;
+
+            // Feed a compatible synthetic pointer gesture into Legion's
+            // existing swipe engine. This keeps touch and mouse behavior identical.
+            const tile = board.querySelector(`.tile[data-i="${start.index}"]`);
+            if (!tile) return;
+            const pointerId = 777;
+            try {
+              tile.dispatchEvent(new PointerEvent('pointerdown', {
+                bubbles: true,
+                pointerId,
+                pointerType: 'touch',
+                clientX: start.x,
+                clientY: start.y,
+                buttons: 1
+              }));
+              board.dispatchEvent(new PointerEvent('pointerup', {
+                bubbles: true,
+                pointerId,
+                pointerType: 'touch',
+                clientX: touch.clientX,
+                clientY: touch.clientY,
+                buttons: 0
+              }));
+            } catch {
+              // Older WebViews may not expose PointerEvent; the native handler
+              // remains available on browsers that support it.
+            }
+          }, { passive: false });
+        };
+
+        const observer = new MutationObserver(watch);
+        observer.observe(document.documentElement, { childList: true, subtree: true });
+        watch();
+      })();
+    </script>
   </body>
 </html>
