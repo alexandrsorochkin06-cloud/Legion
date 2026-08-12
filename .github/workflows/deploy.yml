@@ -1,43 +1,10 @@
-name: Deploy Legion Web
+name: Legacy workflow disabled
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
 jobs:
-  build:
+  disabled:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup Node.js 24
-        uses: actions/setup-node@v5
-        with:
-          node-version: 24
-          package-manager-cache: false
-      - name: Verify Node and npm
-        run: node --version && npm --version
-      - name: Install dependencies
-        run: npm install --no-audit --no-fund
-      - name: Build Legion
-        run: npm run build
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v4
-        with:
-          path: ./dist
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - run: echo "Legacy workflow disabled; use deploy-pages.yml"
