@@ -27,6 +27,18 @@ jobs:
         run: npm install --no-audit --no-fund
       - name: Build Legion
         run: npm run build
+      - name: Verify Pages bundle
+        shell: bash
+        run: |
+          test -f dist/index.html
+          test -f dist/app.js
+          ! grep -q './src/main.ts' dist/index.html
+          grep -q '/Legion/app.js' dist/index.html
+          test -f dist/.nojekyll || touch dist/.nojekyll
+          echo '--- dist/index.html ---'
+          sed -n '1,80p' dist/index.html
+          echo '--- dist files ---'
+          find dist -maxdepth 2 -type f -print | sort
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:
