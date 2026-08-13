@@ -1,6 +1,15 @@
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  // Relative assets work both on GitHub Pages /Legion/ and a custom root domain.
-  base: "./",
+  // Legion is deployed at https://alexandrsorochkin06-cloud.github.io/Legion/
+  base: "/Legion/",
+  build: {
+    rollupOptions: {
+      output: {
+        entryFileNames: "app.js",
+        chunkFileNames: "assets/[name]-[hash].js",
+        assetFileNames: "assets/[name]-[hash][extname]",
+      },
+    },
+  },
 });
